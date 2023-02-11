@@ -48,8 +48,9 @@ export const RoomPrototype = {
     "admin": String,
     "status": String,
     "button": String,
-    "players": Array,
+    "players": Array, // { "id": String, "isInGame": Boolean, "isAllIn": Boolean }
     "queue": Array,
+    "pool": Number,
 };
 
 export const UserPrototype = {

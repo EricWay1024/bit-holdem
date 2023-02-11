@@ -1,7 +1,7 @@
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <script>
   const socket = io();
-  socket.emit("Game::Create", {}, (res) => {
+  socket.emit("Room::Create", {}, (res) => {
     console.log(res);
   });
 </script>
