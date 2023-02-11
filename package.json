@@ -1,23 +1,17 @@
 {
   "name": "bit-holdem",
   "version": "1.0.0",
-  "description": "Virtual offline poker games",
-  "main": "app.js",
+  "private": true,
   "type": "module",
   "scripts": {
-    "start": "node app.js"
+    "start": "node src/app.js",
+    "dev": "nodemon --exec npm start"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/EricWay1024/bit-holdem.git"
-  },
-  "author": "EricWay1024",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/EricWay1024/bit-holdem/issues"
-  },
-  "homepage": "https://github.com/EricWay1024/bit-holdem",
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "socket.io": "^4.6.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
   }
 }
