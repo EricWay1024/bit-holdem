@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 
 // load const
-import { RoomEvents } from './consts.js';
+import { RoomEvents, RoomStatus } from './consts.js';
 
 // load dotenv
 import * as dotenv from 'dotenv';
@@ -26,12 +26,12 @@ const onConnection = (socket) => {
 
     // listen for RoomEvents
     socket.on(RoomEvents.Create, (args, callback) => {
-        const roomId = Math.floor(100000 + Math.random() * 900000).toString();
+        const id = Math.floor(100000 + Math.random() * 900000).toString();
 
         // room exists
         if (rooms.findOne({
             "id": {
-                "$eq": roomId
+                "$eq": id
             }
         })) {
             callback({
@@ -43,36 +43,79 @@ const onConnection = (socket) => {
 
         // insert into database
         rooms.insert({
-            "id": String,
-            "admin": String,
-            "status": String,
-            "button": String,
-            "players": Array,
-            "queue": Array,
+            "id": id,
+            "admin": socket.id,
+            "status": RoomStatus.INIT,
+            "player": [],
         });
 
         // return to client
-        socket.join(roomId);
+        socket.join(id);
         callback({
             "errno": 0,
             "message": "success",
             "data": {
-                "id": roomId,
+                "id": id,
             }
         });
     });
     socket.on(RoomEvents.Join, (args, callback) => {
-        // TODO
+        if (!args.name || args.name.trim().length === 0) {
+            callback({
+                "errno": -1,
+                "message": "Name invalid.",
+            });
+            return;
+        }
+
+        const room = rooms.findOne({
+            "id": {
+                "$eq": args.id
+            }
+        });
+
+        // room not found
+        if (!room) {
+            callback({
+                "errno": -1,
+                "message": "Room not found.",
+            });
+            return;
+        }
+
+        // return to client
+        socket.join(args.id);
+        socket.to(args.id).emit("Room::Event", `${args.name} joined.`);
         callback({
             "errno": 0,
             "message": "success"
         });
     });
-    socket.on(RoomEvents.Quit, (args, callback) => {
-        // TODO
+    socket.on(RoomEvents.Fetch, (args, callback) => {
+        const ids = [];
+        for (const id of socket.rooms) {
+            if (id !== socket.id) ids.push(id);
+        }
+        const room = rooms.findOne({
+            "id": {
+                "$eq": ids[0]
+            }
+        });
+
+        // room not found
+        if (!room) {
+            callback({
+                "errno": -1,
+                "message": "Room not found.",
+            });
+            return;
+        }
+
+        // return to client
         callback({
             "errno": 0,
-            "message": "success"
+            "message": "success",
+            "data": room,
         });
     });
 
@@ -106,7 +149,7 @@ const onConnection = (socket) => {
     const io = new Server(server);
 
     // serve static files
-    app.use(express.static("dist"));
+    app.use(express.static("./client/build/"));
 
     // listen for connections
     io.on("connection", onConnection);

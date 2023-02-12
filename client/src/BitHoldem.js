@@ -10,13 +10,12 @@ export const socket = io();
 
 export const BitHoldem = () => {
   const [state, setState] = React.useState(ClientState.LOBBY);
-  const [room, setRoom] = React.useState(null);
 
   return (
     <React.Fragment>
-        {state === ClientState.LOBBY && <Lobby setState={setState} setRoom={setRoom} />}
-        {state === ClientState.PLAY && <Play room={room} />}
-        {state === ClientState.ADMIN && <Admin room={room} />}
+        {state === ClientState.LOBBY && <Lobby setState={setState} />}
+        {state === ClientState.PLAY && <Play />}
+        {state === ClientState.ADMIN && <Admin />}
     </React.Fragment>
   );
 };

@@ -17,7 +17,8 @@ export const RoomEvents = {
     "Create": "Room::Create",
     "Join": "Room::Join",
     "Quit": "Room::Quit",
-    "Update": "Room::Update"
+    "Fetch": "Room::Fetch",
+    "Update": "Room::Update",
 };
 
 export const PlayEvents = {
@@ -48,7 +49,7 @@ export const RoomPrototype = {
     "admin": String,
     "status": String,
     "button": String,
-    "players": Array, // { "id": String, "isInGame": Boolean, "isAllIn": Boolean }
+    "players": Array, // { "id": String, "name": String, "isInGame": Boolean, "isAllIn": Boolean }
     "queue": Array,
     "pool": Number,
 };
