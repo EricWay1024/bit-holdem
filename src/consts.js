@@ -19,6 +19,7 @@ export const RoomEvents = {
     "Quit": "Room::Quit",
     "Fetch": "Room::Fetch",
     "Update": "Room::Update",
+    "Feed": "Room::Feed",
 };
 
 export const PlayEvents = {
@@ -29,6 +30,8 @@ export const PlayEvents = {
 };
 
 export const AdminEvents = {
+    "StartGame": "Admin::StartGame",
+    "NextState": "Admin::NextState",
     "SetAdmin": "Admin::SetAdmin",
     "SetAssets": "Admin::SetAssets",
     "RemovePlayer": "Admin::RemovePlayer",
@@ -54,7 +57,7 @@ export const RoomPrototype = {
     "pool": Number,
 };
 
-export const UserPrototype = {
-    "id": String,
-    "assets": Number,
-};
+// export const UserPrototype = {
+//     "id": String,
+//     "assets": Number,
+// };

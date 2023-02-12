@@ -5,13 +5,15 @@ import { socket } from "../../BitHoldem";
 const Play = () => {
   const [ feed, setFeed ] = React.useState([]);
   const [ assets, setAssets ] = React.useState(0.0);
-  const [ roomInfo, setRoomInfo ] = React.useState({});
+  const [ roomInfo, setRoomInfo ] = React.useState({
+    players: {},
+  });
 
   socket.on("Room::Update", (room) => {
     setRoomInfo(room);
   });
 
-  socket.on("Room::Event", (msg) => {
+  socket.on("Room::Feed", (msg) => {
     setFeed([...feed, msg]);
   });
 
@@ -46,12 +48,17 @@ const Play = () => {
             <br/>
             <b>Status:</b> {roomInfo.status}
             <br/>
-            <b>Pool:</b> {0}
+            <b>Pool:</b> {120}
             <br/>
-            <b>Calling:</b> {0}
+            <b>Calling:</b> {20}
             <br/>
             {/* u: allin, i: dealer, b: current, s: fold */}
-            <b>Players:</b> <u>{"Alex"}</u>, <i>{"Bob"}</i>, <b>{"Cindy"}</b>, Dong, <s>Emily</s>
+            {/* <b>Players:</b> {Object.entries(roomInfo.players).map(([k, v]) => {
+              let content = v.name;
+              if (!v.isInGame) content = (<s>{content}</s>);
+              if (v.isAllIn) content = (<u>{content}</u>);
+              return content;
+            })}; */}
           </Container>
           <br />
           <Container>
@@ -61,10 +68,10 @@ const Play = () => {
           </Container>
           <br />
           <Container>
-            <Button disabled>Fold</Button>
-            <Button disabled>Call</Button>
-            <Button disabled>Raise</Button>
-            <Button disabled>All In</Button>
+            <Button disabled={ !roomInfo || roomInfo.status === "INIT" }>Fold</Button>
+            <Button disabled={ !roomInfo || roomInfo.status === "INIT" }>Call</Button>
+            <Button disabled={ !roomInfo || roomInfo.status === "INIT" }>Raise</Button>
+            <Button disabled={ !roomInfo || roomInfo.status === "INIT" }>AllIn</Button>
           </Container>
         </Segment>
       </Grid.Column>

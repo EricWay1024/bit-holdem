@@ -10,7 +10,7 @@ const Admin = () => {
     setRoomInfo(room);
   });
 
-  socket.on("Room::Event", (msg) => {
+  socket.on("Room::Feed", (msg) => {
     setFeed([...feed, msg]);
   });
 
@@ -20,6 +20,16 @@ const Admin = () => {
       setRoomInfo(response.data);
     };
   }, []);
+
+  const onClickStart = async () => {
+    const response = await socket.timeout(1000).emitWithAck("Admin::StartGame", {});
+    setRoomInfo(response.data);
+  };
+
+  const onClickNext = async () => {
+    const response = await socket.timeout(1000).emitWithAck("Admin::NextState", {});
+    setRoomInfo(response.data);
+  };
 
   return (
     <Grid textAlign="center" style={{ height: "100vh" }} verticalAlign="middle">
@@ -45,16 +55,17 @@ const Admin = () => {
             <br/>
             <b>Status:</b> {roomInfo.status}
             <br/>
-            <b>Pool:</b> {0}
+            <b>Pool:</b> {120}
             <br/>
-            <b>Calling:</b> {0}
+            <b>Calling:</b> {20}
             <br/>
             {/* u: allin, b: current, s: fold */}
-            <b>Players:</b> <u>{"Alex"}</u>, <i>{"Bob"}</i>, <b>{"Cindy"}</b>, Dong, <s>Emily</s>
+            {/* <b>Players:</b> <u>{"Alex"}</u>, <i>{"Bob"}</i>, <b>{"Cindy"}</b>, Dong, <s>Emily</s> */}
           </Container>
           <br />
           <Container>
-            <Button disabled>Start</Button>
+            <Button disabled={ !roomInfo || roomInfo.status !== "INIT" } onClick={onClickStart}>Start</Button>
+            <Button disabled={ !roomInfo || roomInfo.status === "INIT" } onClick={onClickNext}>Next</Button>
           </Container>
         </Segment>
       </Grid.Column>

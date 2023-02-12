@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 
 // load const
-import { RoomEvents, RoomStatus } from './consts.js';
+import { AdminEvents, RoomEvents, RoomStatus } from './consts.js';
 
 // load dotenv
 import * as dotenv from 'dotenv';
@@ -18,11 +18,6 @@ const players = db.addCollection('players');
 // define onConnection
 const onConnection = (socket) => {
     console.debug(`Connected: ${socket.id}`);
-    
-    players.insert({
-        "id": socket.id,
-        "assets": NaN,
-    });
 
     // listen for RoomEvents
     socket.on(RoomEvents.Create, (args, callback) => {
@@ -46,7 +41,7 @@ const onConnection = (socket) => {
             "id": id,
             "admin": socket.id,
             "status": RoomStatus.INIT,
-            "player": [],
+            "players": {},
         });
 
         // return to client
@@ -83,9 +78,17 @@ const onConnection = (socket) => {
             return;
         }
 
+        room.players[socket.id] = {
+            "name": args.name,
+            "assets": 1000,
+            "isInGame": true,
+            "isAllIn": false,
+        };
+
         // return to client
-        socket.join(args.id);
-        socket.to(args.id).emit("Room::Event", `${args.name} joined.`);
+        socket.join(room.id);
+        socket.to(room.id).emit(RoomEvents.Feed, `${args.name} joined.`);
+        socket.to(room.id).emit(RoomEvents.Update, room);
         callback({
             "errno": 0,
             "message": "success"
@@ -119,22 +122,88 @@ const onConnection = (socket) => {
         });
     });
 
+    socket.on(AdminEvents.StartGame, (args, callback) => {
+        const ids = [];
+        for (const id of socket.rooms) {
+            if (id !== socket.id) ids.push(id);
+        }
+        const room = rooms.findOne({
+            "id": {
+                "$eq": ids[0]
+            }
+        });
+
+        if (room.admin !== socket.id) {
+            callback({
+                "errno": -1,
+                "message": "You are not an admin.",
+            });
+            return;
+        }
+
+        const statusArray = Object.values(RoomStatus);
+        const statusIndex = statusArray.indexOf(room.status);
+        room.status = statusArray[(statusIndex+1)%statusArray.length];
+
+        socket.to(room.id).emit(RoomEvents.Update, room);
+
+        // return to client
+        callback({
+            "errno": 0,
+            "message": "success",
+            "data": room,
+        });
+    });
+
+    socket.on(AdminEvents.NextState, (args, callback) => {
+        const ids = [];
+        for (const id of socket.rooms) {
+            if (id !== socket.id) ids.push(id);
+        }
+        const room = rooms.findOne({
+            "id": {
+                "$eq": ids[0]
+            }
+        });
+
+        if (room.admin !== socket.id) {
+            callback({
+                "errno": -1,
+                "message": "You are not an admin.",
+            });
+            return;
+        }
+
+        const statusArray = Object.values(RoomStatus);
+        const statusIndex = statusArray.indexOf(room.status);
+        room.status = statusArray[(statusIndex+1)%statusArray.length];
+
+        socket.to(room.id).emit(RoomEvents.Update, room);
+
+        // return to client
+        callback({
+            "errno": 0,
+            "message": "success",
+            "data": room,
+        });
+    });
+
     // listen for disconnections
     socket.on('disconnect', () => {
         console.debug(`Disonnected: ${socket.id}`);
-        rooms.findAndUpdate({
-            "players": {
-                "$contains": socket.id
-            }
-        }, (room) => {
-            room.players = room.players.filter(player => player != socket.id);
-            io.to(room.id).emit(RoomEvents.Update, room);
-        });
-        players.findAndRemove({
-            "id": {
-                "$eq": socket.id
-            }
-        });
+        // rooms.findAndUpdate({
+        //     "players": {
+        //         "$contains": socket.id
+        //     }
+        // }, (room) => {
+        //     room.players = room.players.filter(player => player != socket.id);
+        //     io.to(room.id).emit(RoomEvents.Update, room);
+        // });
+        // players.findAndRemove({
+        //     "id": {
+        //         "$eq": socket.id
+        //     }
+        // });
     });
 };
 
