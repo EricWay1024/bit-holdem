@@ -1,18 +1,22 @@
 import React from "react";
 import io from 'socket.io-client';
+import { ClientState } from "./consts";
 
+import Admin from "./pages/Admin/Admin";
 import Lobby from "./pages/Lobby/Lobby";
+import Play from "./pages/Play/Play";
 
-const socket = io();
-
-export const GameSocket = React.createContext(null);
+export const socket = io();
 
 export const BitHoldem = () => {
-  const [state, setState] = React.useState("LOBBY");
+  const [state, setState] = React.useState(ClientState.LOBBY);
+  const [room, setRoom] = React.useState(null);
 
   return (
-    <GameSocket.Provider value={socket}>
-        {state === "LOBBY" && <Lobby setState={setState} />}
-    </GameSocket.Provider>
+    <React.Fragment>
+        {state === ClientState.LOBBY && <Lobby setState={setState} setRoom={setRoom} />}
+        {state === ClientState.PLAY && <Play room={room} />}
+        {state === ClientState.ADMIN && <Admin room={room} />}
+    </React.Fragment>
   );
 };
